@@ -10,7 +10,7 @@ const api = async (body, res) => {
 
     let isLinux = (process.platform === "linux");
     const ytdl_find_extension = (fileName) => {
-        if (!fileName.includes('.'))
+        if (!fileName.indexOf('.') > 0 )
             return "mp4";
         fileName = fileName.split(".");
         if (fileName.length === 1)
@@ -57,11 +57,11 @@ const api = async (body, res) => {
             exec(isLinux ? 'rm *.mp4' : 'del *.mp4');
             exec(isLinux ? 'rm *.webm' : 'del *.webm');
             return res.end('all videos deleted');
-        } else if (link.includes('cleanfile:') !== false) {
+        } else if (link.indexOf('cleanfile:') > 0 ) {
             link = link.replaceAll('cleanfile:', '');
             exec(isLinux ? 'rm ' + link : 'del "' + link + '"');
             return res.end('video deleted');
-        } else if (link.includes('renamefile:') !== false) {
+        } else if (link.indexOf('renamefile:') > 0 ) {
             // old name
             link = link.replaceAll('renamefile:', '');
             // new name
@@ -73,11 +73,13 @@ const api = async (body, res) => {
         } else if (link.toLowerCase() === 'list' || link.toLowerCase() === 'videos') {
             let scDir = fs.readdirSync('.');
             let videos = 'videos-list:{';
-            for (let file in scDir)
-                if (file.includes('.mp4') || file.includes('.webm'))
-                    videos += "\n\"" + file + '" : "' + file + '" ,';
+            for (let file in scDir){
+                if (scDir[file].indexOf('.mp4') > 0 || scDir[file].indexOf('.webm')  > 0 )
+                    videos += "\n\"" + scDir[file] + '" : "' + scDir[file] + '" ,';
+            }
             videos = trim(videos, " ,");
             videos += '}';
+            console.log( videos );
             return res.end(videos);
         } // else :
         if ( body.info ) { // for next version!
@@ -95,7 +97,7 @@ const api = async (body, res) => {
                 down = std.split("[download]");
                 if (down && down.length > 0) for (let intel in down) {
                     intel = trim(intel, " /\\\r\n\t");
-                    if (intel.includes('Destination:')) {
+                    if ( intel.indexOf('Destination:')  > 0 ) {
                         // get file name
                         intel = intel.replace('Destination:', '').trim();
                         // make new clean name
