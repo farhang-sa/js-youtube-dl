@@ -48,6 +48,8 @@ const serverMiddle = (req, res) => {
 			".svg"  : "image/svg+xml" ,
 			".mp3" 	: "audio/mp3" ,
 			".mp4" 	: "video/mp4" ,
+			".mkv" 	: "video/mkv" ,
+			".webm" 	: "video/webm" 
 		}; let mime = "" ;
 		for( let exn in mat ){
 			if( exn === ext )
