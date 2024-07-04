@@ -10,7 +10,7 @@ const api = async (body, res) => {
 
     let isLinux = (process.platform === "linux");
     const ytdl_find_extension = (fileName) => {
-        if (!fileName.indexOf('.') > 0 )
+        if (fileName.indexOf('.') < 0 )
             return "mp4";
         fileName = fileName.split(".");
         if (fileName.length === 1)
@@ -21,9 +21,9 @@ const api = async (body, res) => {
     function ytdl_make_name(fileName) {
         let ext = ytdl_find_extension(fileName);
         // remove extension name
-        fileName = fileName.replaceAll('.'.ext, '',);
+        fileName = fileName.replaceAll( '.' + ext , '' );
         // clean name
-        fileName = fileName.replaceAll(' ', '_');
+        fileName = fileName.replaceAll( ' ' , '_');
         return fileName.replaceAll("/[^A-Za-z0-9_.-]/", '') + '.' + ext;
     }
 
@@ -51,35 +51,39 @@ const api = async (body, res) => {
             return res.end('No link');
 
         let link = body.link;
-
         let quality = body.quality ? body.quality : null;
         if (link.toLowerCase() === 'clear' || link.toLowerCase() === 'clean') {
             exec(isLinux ? 'rm *.mp4' : 'del *.mp4');
             exec(isLinux ? 'rm *.webm' : 'del *.webm');
             return res.end('all videos deleted');
-        } else if (link.indexOf('cleanfile:') > 0 ) {
+        } else if (link.indexOf('cleanfile:') >= 0 ) {
             link = link.replaceAll('cleanfile:', '');
-            exec(isLinux ? 'rm ' + link : 'del "' + link + '"');
-            return res.end('video deleted');
-        } else if (link.indexOf('renamefile:') > 0 ) {
+            fs.unlinkSync( link );
+            if( fs.existsSync( link ) )
+                exec(isLinux ? 'rm ' + link : 'del "' + link + '"' , ( err , std , stderr ) => {
+                    return res.end('video deleted');
+                });
+            else return res.end('video deleted');
+        } else if (link.indexOf('renamefile:') >= 0 ) {
             // old name
             link = link.replaceAll('renamefile:', '');
             // new name
-            let nName = ytdl_make_name(body.to ? body.to : link);
-            fs.renameSync(link, nName)
-            if (fs.existsSync(link)) // rename!
-                return res.end('video renamed:' + nName);
-            return res.end('video renamed:' + link); // fail
+            let nName = ytdl_make_name(body.to ? body.to : link );
+            fs.renameSync( link , nName )
+            setTimeout( () => {
+                if ( fs.existsSync( nName ) ) // rename!
+                    res.end('video renamed:' + nName);
+                else res.end('video renamed:' + link); // fail
+            } , 200 );
+            return true ;
         } else if (link.toLowerCase() === 'list' || link.toLowerCase() === 'videos') {
             let scDir = fs.readdirSync('.');
             let videos = 'videos-list:{';
-            for (let file in scDir){
-                if (scDir[file].indexOf('.mp4') > 0 || scDir[file].indexOf('.webm')  > 0 )
+            for (let file in scDir)
+                if (scDir[file].indexOf('.mp4') >= 0 || scDir[file].indexOf('.webm')  >= 0 )
                     videos += "\n\"" + scDir[file] + '" : "' + scDir[file] + '" ,';
-            }
             videos = trim(videos, " ,");
             videos += '}';
-            console.log( videos );
             return res.end(videos);
         } // else :
         if ( body.info ) { // for next version!
@@ -97,7 +101,7 @@ const api = async (body, res) => {
                 down = std.split("[download]");
                 if (down && down.length > 0) for (let intel in down) {
                     intel = trim(intel, " /\\\r\n\t");
-                    if ( intel.indexOf('Destination:')  > 0 ) {
+                    if ( intel.indexOf('Destination:')  >= 0 ) {
                         // get file name
                         intel = intel.replace('Destination:', '').trim();
                         // make new clean name
