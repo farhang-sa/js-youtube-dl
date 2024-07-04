@@ -2,8 +2,8 @@
 A wrapper for [@yt-dlp](https://github.com/yt-dlp/) with NodeJS and React
 
 ## challenge : compiling both back-end and front-end with webpack ( like nextjs )
-A practice of compiling BE/FE modules and scripts at the same time with webpack
-App works like [@php-youtube-dl](https://github.com/farhang-sa/php-youtube-dl/) , but with nodejs in backend
+A practice of compiling BE/FE modules and scripts at the same time with webpack.
+ App works like [@farhang-sa/php-youtube-dl](https://github.com/farhang-sa/php-youtube-dl/) , but with nodejs in backend
 
 ## How it works ( for dev ) :
 for compiling both BE & FE , you need to create two webpack.config files and in server.config you need to declare <code> 'target' : 'node'</code> that tells webpack to compile for nodejs not browser.
