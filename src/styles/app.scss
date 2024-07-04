@@ -1,0 +1,10 @@
+$main : black ;
+$night : white ;
+$bg : white ;
+$bgNight : black ;
+@import "app.css";
+
+body {
+	color : $main ;
+	background-color : $bg ;
+}
